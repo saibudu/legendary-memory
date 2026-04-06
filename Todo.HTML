@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Todo App</title>
+</head>
+<body>
+
+<h1>Todo List</h1>
+
+<input id="taskInput" placeholder="tulis task...">
+<button onclick="addTask()">Tambah</button>
+
+<ul id="list"></ul>
+
+<script>
+async function getData() {
+    const res = await fetch("http://127.0.0.1:5000/todo")
+    const data = await res.json()
+
+    const list = document.getElementById("list")
+    list.innerHTML = ""
+
+    data.data.forEach(item => {
+        list.innerHTML += `
+            <li>
+                ${item.task}
+                <button onclick="editTask(${item.id})">edit</button>
+                <button onclick="deleteTask(${item.id})">hapus</button>
+            </li>
+        `
+    })
+}
+
+async function addTask() {
+    const input = document.getElementById("taskInput").value
+
+    await fetch("http://127.0.0.1:5000/todo", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            task: input
+        })
+    })
+
+    getData()
+}
+
+async function deleteTask(id) {
+    await fetch(`http://127.0.0.1:5000/todo/${id}`, {
+        method: "DELETE"
+    })
+
+    getData()
+}
+
+async function editTask(id) {
+    const newTask = prompt("edit task:")
+
+    if (!newTask) return
+
+    await fetch(`http://127.0.0.1:5000/todo/${id}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            task: newTask
+        })
+    })
+
+    getData()
+}
+
+// pertama kali load
+getData()
+</script>
+
+</body>
+</html>
